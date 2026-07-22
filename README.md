@@ -11,6 +11,11 @@ The repository is a pnpm monorepo. The core packages do not depend on a messagin
 - `packages/scenario-schema` — shared scenario contracts and validation.
 - `docs/architecture` — architecture decisions and diagrams.
 
+`core-engine` and `scenario-schema` are private source packages during the
+bootstrap phase: their exports point to TypeScript source and their validation
+is performed by the workspace typecheck. They do not emit distributable JavaScript.
+Publishing packages with `dist` output is a later, explicit packaging decision.
+
 ## Requirements
 
 - Node.js 22 or newer

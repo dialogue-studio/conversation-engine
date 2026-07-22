@@ -19,4 +19,17 @@ describe('getInitialNode', () => {
       }),
     ).toBe(initialNode);
   });
+
+  it('throws when the initial node is absent', () => {
+    expect(() =>
+      getInitialNode({
+        id: 'broken-example',
+        initialNodeId: 'missing',
+        nodes: {},
+        schemaVersion: 1,
+      }),
+    ).toThrow(
+      'Scenario "broken-example" is missing its initial node "missing".',
+    );
+  });
 });
