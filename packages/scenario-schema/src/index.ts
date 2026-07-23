@@ -42,8 +42,8 @@ export interface Transition extends TransitionAvailability {
 export interface ScenarioNode {
   readonly completesObjectiveIds: readonly string[];
   readonly id: string;
-  readonly message: string;
   readonly kind: ScenarioNodeKind;
+  readonly message: string;
   readonly speaker?: string;
   readonly title: string;
   readonly transitions: readonly Transition[];
@@ -60,3 +60,9 @@ export interface Scenario {
   /** Immutable content version chosen by a project when it is published. */
   readonly version: number;
 }
+
+export type {
+  ScenarioValidationIssue,
+  ScenarioValidationResult,
+} from './validator.ts';
+export { validateScenario } from './validator.ts';
