@@ -1,13 +1,11 @@
 import type {
   Scenario,
   ScenarioNode,
-  TransitionKind,
 } from '@conversation-engine/scenario-schema';
 
 export type {
   Scenario,
   ScenarioNode,
-  TransitionKind,
 } from '@conversation-engine/scenario-schema';
 
 /** A platform-independent reference to the person taking part in a conversation. */
@@ -71,7 +69,6 @@ export interface EngineMessage {
 /** A platform adapter turns an available action into a platform-specific button. */
 export interface EngineAction {
   readonly id: string;
-  readonly kind: TransitionKind;
   readonly label: string;
 }
 

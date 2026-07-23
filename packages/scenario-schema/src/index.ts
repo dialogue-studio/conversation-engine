@@ -21,7 +21,16 @@ export interface TransitionAvailability {
 }
 
 export interface Transition extends TransitionAvailability {
+  /**
+   * Stable, scenario-wide unique action identifier. It is safe to persist in
+   * participant progress, including for hint usage.
+   */
   readonly actionId: string;
+  /**
+   * A `hint` transition points to a regular message node that contains the hint
+   * content and any available follow-up actions. Hint text never lives on the
+   * transition itself.
+   */
   readonly kind: TransitionKind;
   readonly label: string;
   readonly targetNodeId: string;
