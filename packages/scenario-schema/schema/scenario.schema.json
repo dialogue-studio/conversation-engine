@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://conversation-engine.dev/schema/scenario.schema.json",
+  "title": "Conversation Engine Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "initialNodeId",
+    "nodes",
+    "objectives",
+    "schemaVersion",
+    "title",
+    "version"
+  ],
+  "properties": {
+    "description": { "type": "string" },
+    "id": { "type": "string", "minLength": 1 },
+    "initialNodeId": { "type": "string", "minLength": 1 },
+    "nodes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/node" }
+    },
+    "objectives": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/objective" }
+    },
+    "schemaVersion": { "const": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "version": { "type": "integer", "minimum": 1 }
+  },
+  "$defs": {
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "required", "title"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "title": { "type": "string", "minLength": 1 }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completesObjectiveIds",
+        "id",
+        "kind",
+        "message",
+        "title",
+        "transitions"
+      ],
+      "properties": {
+        "completesObjectiveIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["completion", "message"] },
+        "message": { "type": "string", "minLength": 1 },
+        "speaker": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "transitions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/transition" }
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "kind", "label", "targetNodeId"],
+      "properties": {
+        "actionId": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["choice", "finish", "hint", "navigation"] },
+        "label": { "type": "string", "minLength": 1 },
+        "requiresCompletedObjectiveIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "targetNodeId": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

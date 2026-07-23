@@ -19,12 +19,16 @@ A `Scenario` is an immutable, versioned graph.
   this lets a hint behave like any other part of the graph and lets progress
   record its stable, scenario-wide unique `actionId`.
 - Completion is determined by the target node, not by a button label alone. A
-  `finish` transition must target a `completion` node; the runtime rejects that
-  mismatch even before the full scenario validator is added.
+  `finish` transition must target a `completion` node, and only a `finish`
+  transition may do so.
 - A `completion` node ends the conversation. The future engine will set progress
   to `completed` only when all required objectives are complete; otherwise it
   records an `incomplete` completion. Authors may therefore offer an early
   “Finish conversation” action without trapping a participant.
+- A reachable completion node therefore has an incoming `finish` transition.
+  The only intentional exception is a zero-step scenario whose initial node is
+  itself a completion node; it is valid for future use cases such as an already
+  completed acknowledgement flow.
 
 The author-facing UI uses titles and labels. Stable IDs link nodes, objectives,
 and transitions so renaming a step cannot break the graph.
@@ -75,12 +79,17 @@ know them to render a button and send its payload.
 
 ## Runtime validation
 
-The current interfaces are compile-time contracts only. IDs remain plain strings
-because scenario content is serialized JSON and must be supplied by an editor,
-an importer, or a storage adapter. A later scenario validator and JSON Schema
-will reject duplicate IDs, missing targets, missing objectives, invalid terminal
-nodes, and inconsistent hint transitions before publication. Until that work is
-implemented, callers must treat externally loaded scenarios as untrusted.
+IDs remain plain strings because scenario content is serialized JSON and must be
+supplied by an editor, an importer, or a storage adapter. Before publication,
+call `validateScenario` from `@conversation-engine/scenario-schema` on that
+untrusted data. It checks the structural contract and graph rules: duplicate
+IDs, missing targets, missing objectives, unreachable nodes, invalid terminal
+nodes, and inconsistent hint or finish transitions.
+
+The package also exports the structural JSON Schema at
+`@conversation-engine/scenario-schema/scenario.schema.json`. The browser editor
+and a future Google Sheets importer can use it for immediate field-level
+feedback; `validateScenario` remains the final graph-level publication check.
 
 The runtime additionally verifies that a `ProgressRepository` returns progress
 for the exact `ScenarioReference` requested by an input. A correct repository
