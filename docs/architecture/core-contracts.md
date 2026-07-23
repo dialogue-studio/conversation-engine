@@ -53,6 +53,23 @@ progress, but neither storage choice is part of the core contract.
 schema and are resolved by the engine; a VK or Telegram adapter does not need to
 know them to render a button and send its payload.
 
+## Runtime behavior
+
+`ConversationEngine` is deterministic and performs one transition per
+`EngineInput`.
+
+- `start_scenario` resumes an `in_progress` attempt; a completed or incomplete
+  attempt starts again from the initial node.
+- `restart_scenario` always replaces progress with a new attempt from the
+  initial node.
+- `select_action` accepts only actions available on the current node. A
+  transition with `requiresCompletedObjectiveIds` is absent from the output and
+  cannot be invoked through a stale platform payload until all of its objectives
+  are complete.
+- Entering a node records it as visited and completes its declared objectives.
+- Entering a `completion` node finishes the attempt. It is `completed` only if
+  every required objective is complete; otherwise it is `incomplete`.
+
 ## Runtime validation
 
 The current interfaces are compile-time contracts only. IDs remain plain strings
