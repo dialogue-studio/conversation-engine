@@ -3,6 +3,8 @@ import type {
   ScenarioNode,
 } from '@conversation-engine/scenario-schema';
 
+import { ScenarioNodeNotFoundError } from './engine.ts';
+
 export {
   ActionUnavailableError,
   ConversationEngine,
@@ -118,9 +120,7 @@ export function getInitialNode(scenario: Scenario): ScenarioNode {
   const node = scenario.nodes[scenario.initialNodeId];
 
   if (!node) {
-    throw new Error(
-      `Scenario "${scenario.id}" is missing its initial node "${scenario.initialNodeId}".`,
-    );
+    throw new ScenarioNodeNotFoundError(scenario.id, scenario.initialNodeId);
   }
 
   return node;
