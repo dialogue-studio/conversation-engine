@@ -6,7 +6,10 @@ import type {
 export {
   ActionUnavailableError,
   ConversationEngine,
+  InvalidFinishTransitionError,
   ProgressNotFoundError,
+  ProgressScenarioMismatchError,
+  ScenarioNodeNotFoundError,
   ScenarioNotFoundError,
 } from './engine.ts';
 export type { Clock, ConversationEngineOptions } from './engine.ts';

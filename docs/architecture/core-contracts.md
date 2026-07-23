@@ -18,6 +18,9 @@ A `Scenario` is an immutable, versioned graph.
   its follow-up actions. The transition itself deliberately stores no hint text;
   this lets a hint behave like any other part of the graph and lets progress
   record its stable, scenario-wide unique `actionId`.
+- Completion is determined by the target node, not by a button label alone. A
+  `finish` transition must target a `completion` node; the runtime rejects that
+  mismatch even before the full scenario validator is added.
 - A `completion` node ends the conversation. The future engine will set progress
   to `completed` only when all required objectives are complete; otherwise it
   records an `incomplete` completion. Authors may therefore offer an early
@@ -78,6 +81,12 @@ an importer, or a storage adapter. A later scenario validator and JSON Schema
 will reject duplicate IDs, missing targets, missing objectives, invalid terminal
 nodes, and inconsistent hint transitions before publication. Until that work is
 implemented, callers must treat externally loaded scenarios as untrusted.
+
+The runtime additionally verifies that a `ProgressRepository` returns progress
+for the exact `ScenarioReference` requested by an input. A correct repository
+keys progress by participant, scenario ID, and version; the explicit guard turns
+an incorrect adapter implementation into a domain error instead of resolving a
+node ID against an unrelated scenario version.
 
 ## Application boundary
 

@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import {
   ActionUnavailableError,
   ConversationEngine,
+  InvalidFinishTransitionError,
   ProgressNotFoundError,
+  ProgressScenarioMismatchError,
   ScenarioNotFoundError,
 } from './index.ts';
 import type {
@@ -190,11 +192,19 @@ class InMemoryScenarioRepository implements ScenarioRepository {
   }
 }
 
-function createEngine(): ConversationEngine {
+function createEngine(
+  options: {
+    readonly progressRepository?: ProgressRepository;
+    readonly scenarios?: readonly Scenario[];
+  } = {},
+): ConversationEngine {
   return new ConversationEngine({
     clock: new IncrementingClock(),
-    progressRepository: new InMemoryProgressRepository(),
-    scenarioRepository: new InMemoryScenarioRepository([scenario]),
+    progressRepository:
+      options.progressRepository ?? new InMemoryProgressRepository(),
+    scenarioRepository: new InMemoryScenarioRepository(
+      options.scenarios ?? [scenario],
+    ),
   });
 }
 
@@ -336,6 +346,96 @@ describe('ConversationEngine', () => {
         scenario: { scenarioId: 'missing', version: 1 },
       }),
     ).rejects.toThrow(ScenarioNotFoundError);
+  });
+
+  it('rejects a finish action that targets a regular message node', async () => {
+    const invalidScenario = {
+      id: 'invalid-finish',
+      initialNodeId: 'intro',
+      nodes: {
+        intro: {
+          completesObjectiveIds: [],
+          id: 'intro',
+          kind: 'message',
+          message: 'Start',
+          title: 'Start',
+          transitions: [
+            {
+              actionId: 'invalid-finish-action',
+              kind: 'finish',
+              label: 'Finish',
+              targetNodeId: 'not-finished',
+            },
+          ],
+        },
+        'not-finished': {
+          completesObjectiveIds: [],
+          id: 'not-finished',
+          kind: 'message',
+          message: 'This is not a completion node.',
+          title: 'Not finished',
+          transitions: [],
+        },
+      },
+      objectives: [],
+      schemaVersion: 1,
+      title: 'Invalid finish',
+      version: 1,
+    } as const satisfies Scenario;
+    const invalidReference: ScenarioReference = {
+      scenarioId: invalidScenario.id,
+      version: invalidScenario.version,
+    };
+    const engine = createEngine({ scenarios: [invalidScenario] });
+
+    await engine.handle({
+      kind: 'start_scenario',
+      participant,
+      scenario: invalidReference,
+    });
+
+    await expect(
+      engine.handle({
+        actionId: 'invalid-finish-action',
+        kind: 'select_action',
+        participant,
+        scenario: invalidReference,
+      }),
+    ).rejects.toThrow(InvalidFinishTransitionError);
+  });
+
+  it('rejects progress returned for a different scenario version', async () => {
+    const newerReference: ScenarioReference = {
+      scenarioId: scenarioReference.scenarioId,
+      version: 2,
+    };
+    const staleProgress: ScenarioProgress = {
+      completedObjectiveIds: [],
+      currentNodeId: 'intro',
+      participant,
+      scenario: scenarioReference,
+      startedAt: '2026-07-23T10:00:00.000Z',
+      status: 'in_progress',
+      updatedAt: '2026-07-23T10:00:00.000Z',
+      usedHintActionIds: [],
+      visitedNodeIds: ['intro'],
+    };
+    const engine = createEngine({
+      progressRepository: {
+        get: () => Promise.resolve(staleProgress),
+        save: () => Promise.resolve(),
+      },
+      scenarios: [{ ...scenario, version: newerReference.version }],
+    });
+
+    await expect(
+      engine.handle({
+        actionId: 'ask-about-bank',
+        kind: 'select_action',
+        participant,
+        scenario: newerReference,
+      }),
+    ).rejects.toThrow(ProgressScenarioMismatchError);
   });
 });
 

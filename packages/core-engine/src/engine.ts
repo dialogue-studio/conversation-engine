@@ -51,6 +51,31 @@ export class ActionUnavailableError extends Error {
   }
 }
 
+export class InvalidFinishTransitionError extends Error {
+  constructor(actionId: string, targetNodeId: string) {
+    super(
+      `Finish action "${actionId}" must target a completion node, but targeted "${targetNodeId}".`,
+    );
+    this.name = 'InvalidFinishTransitionError';
+  }
+}
+
+export class ProgressScenarioMismatchError extends Error {
+  constructor(progress: ScenarioReference, input: ScenarioReference) {
+    super(
+      `Progress belongs to scenario "${progress.scenarioId}" version ${String(progress.version)}, but the input references "${input.scenarioId}" version ${String(input.version)}.`,
+    );
+    this.name = 'ProgressScenarioMismatchError';
+  }
+}
+
+export class ScenarioNodeNotFoundError extends Error {
+  constructor(scenarioId: string, nodeId: string) {
+    super(`Scenario "${scenarioId}" is missing node "${nodeId}".`);
+    this.name = 'ScenarioNodeNotFoundError';
+  }
+}
+
 export class ConversationEngine {
   readonly #clock: Clock;
   readonly #progressRepository: ProgressRepository;
@@ -113,6 +138,13 @@ export class ConversationEngine {
       throw new ProgressNotFoundError(input.participant, input.scenario);
     }
 
+    if (!sameScenarioReference(currentProgress.scenario, input.scenario)) {
+      throw new ProgressScenarioMismatchError(
+        currentProgress.scenario,
+        input.scenario,
+      );
+    }
+
     if (currentProgress.status !== 'in_progress') {
       throw new ActionUnavailableError(
         input.actionId,
@@ -133,6 +165,11 @@ export class ConversationEngine {
     }
 
     const nextNode = this.#getNode(scenario, transition.targetNodeId);
+
+    if (transition.kind === 'finish' && nextNode.kind !== 'completion') {
+      throw new InvalidFinishTransitionError(transition.actionId, nextNode.id);
+    }
+
     const now = this.#clock.now();
     const completedObjectiveIds = unique([
       ...currentProgress.completedObjectiveIds,
@@ -211,7 +248,7 @@ export class ConversationEngine {
     const node = scenario.nodes[nodeId];
 
     if (!node) {
-      throw new Error(`Scenario "${scenario.id}" is missing node "${nodeId}".`);
+      throw new ScenarioNodeNotFoundError(scenario.id, nodeId);
     }
 
     return node;
@@ -271,4 +308,13 @@ export class ConversationEngine {
 
 function unique(values: readonly string[]): readonly string[] {
   return [...new Set(values)];
+}
+
+function sameScenarioReference(
+  first: ScenarioReference,
+  second: ScenarioReference,
+): boolean {
+  return (
+    first.scenarioId === second.scenarioId && first.version === second.version
+  );
 }
