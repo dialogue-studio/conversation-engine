@@ -27,6 +27,9 @@ export interface Transition extends TransitionAvailability {
    */
   readonly actionId: string;
   /**
+   * Completion is determined by the target node. A `finish` transition must
+   * target a completion node; the runtime rejects the inverse mismatch.
+   *
    * A `hint` transition points to a regular message node that contains the hint
    * content and any available follow-up actions. Hint text never lives on the
    * transition itself.

@@ -37,8 +37,6 @@ describe('getInitialNode', () => {
         title: 'Broken example',
         version: 1,
       }),
-    ).toThrow(
-      'Scenario "broken-example" is missing its initial node "missing".',
-    );
+    ).toThrow('Scenario "broken-example" is missing node "missing".');
   });
 });
