@@ -5,8 +5,11 @@ import { getInitialNode } from './index.ts';
 describe('getInitialNode', () => {
   it('returns the configured initial node', () => {
     const initialNode = {
+      completesObjectiveIds: [],
       id: 'intro',
+      kind: 'message',
       message: 'Hello',
+      title: 'Introduction',
       transitions: [],
     } as const;
 
@@ -15,7 +18,10 @@ describe('getInitialNode', () => {
         id: 'example',
         initialNodeId: 'intro',
         nodes: { intro: initialNode },
+        objectives: [],
         schemaVersion: 1,
+        title: 'Example',
+        version: 1,
       }),
     ).toBe(initialNode);
   });
@@ -26,7 +32,10 @@ describe('getInitialNode', () => {
         id: 'broken-example',
         initialNodeId: 'missing',
         nodes: {},
+        objectives: [],
         schemaVersion: 1,
+        title: 'Broken example',
+        version: 1,
       }),
     ).toThrow(
       'Scenario "broken-example" is missing its initial node "missing".',
