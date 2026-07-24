@@ -64,5 +64,5 @@ export interface Scenario {
 export type {
   ScenarioValidationIssue,
   ScenarioValidationResult,
-} from './validator.ts';
-export { validateScenario } from './validator.ts';
+} from './validator.js';
+export { validateScenario } from './validator.js';

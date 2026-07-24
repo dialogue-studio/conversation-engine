@@ -8,8 +8,10 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "pnpm --filter @conversation-engine/vk-worker build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "build": "pnpm build:packages && pnpm build:worker",
+    "build:packages": "pnpm --filter './packages/**' -r build",
+    "build:worker": "pnpm --filter @conversation-engine/vk-worker build",
+    "check": "pnpm format:check && pnpm build:packages && pnpm lint && pnpm typecheck && pnpm test && pnpm build:worker",
     "changeset": "changeset",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

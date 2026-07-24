@@ -11,10 +11,10 @@ The repository is a pnpm monorepo. The core packages do not depend on a messagin
 - `packages/scenario-schema` — shared scenario contracts and validation.
 - `docs/architecture` — architecture decisions and diagrams.
 
-`core-engine` and `scenario-schema` are private source packages during the
-bootstrap phase: their exports point to TypeScript source and their validation
-is performed by the workspace typecheck. They do not emit distributable JavaScript.
-Publishing packages with `dist` output is a later, explicit packaging decision.
+`core-engine` and `scenario-schema` emit ESM and declaration files to `dist`.
+They are ready to be packed and consumed by a separate adapter repository. A
+registry publication remains a separate operational decision: it requires an
+approved package owner and release credentials.
 
 ## Requirements
 

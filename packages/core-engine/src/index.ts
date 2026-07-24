@@ -3,7 +3,7 @@ import type {
   ScenarioNode,
 } from '@conversation-engine/scenario-schema';
 
-import { ScenarioNodeNotFoundError } from './engine.ts';
+import { ScenarioNodeNotFoundError } from './engine.js';
 
 export {
   ActionUnavailableError,
@@ -13,8 +13,8 @@ export {
   ProgressScenarioMismatchError,
   ScenarioNodeNotFoundError,
   ScenarioNotFoundError,
-} from './engine.ts';
-export type { Clock, ConversationEngineOptions } from './engine.ts';
+} from './engine.js';
+export type { Clock, ConversationEngineOptions } from './engine.js';
 
 export type {
   Scenario,
