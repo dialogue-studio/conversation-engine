@@ -14,7 +14,7 @@ import type {
   ScenarioProgress,
   ScenarioReference,
   ScenarioRepository,
-} from './index.ts';
+} from './index.js';
 
 export interface Clock {
   now(): string;

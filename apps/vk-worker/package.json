@@ -9,8 +9,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@conversation-engine/core-engine": "workspace:*",
-    "@conversation-engine/scenario-schema": "workspace:*",
+    "@conversation-engine/core-engine": "workspace:^",
+    "@conversation-engine/scenario-schema": "workspace:^",
     "hono": "4.12.31"
   },
   "devDependencies": {

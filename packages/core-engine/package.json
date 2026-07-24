@@ -1,16 +1,26 @@
 {
   "name": "@conversation-engine/core-engine",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "pack:check": "npm pack --dry-run",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@conversation-engine/scenario-schema": "workspace:*"
+    "@conversation-engine/scenario-schema": "workspace:^"
   },
   "devDependencies": {
     "typescript": "6.0.3"

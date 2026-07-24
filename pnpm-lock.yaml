@@ -51,10 +51,10 @@ importers:
   apps/vk-worker:
     dependencies:
       '@conversation-engine/core-engine':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/core-engine
       '@conversation-engine/scenario-schema':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/scenario-schema
       hono:
         specifier: 4.12.31
@@ -73,7 +73,7 @@ importers:
   packages/core-engine:
     dependencies:
       '@conversation-engine/scenario-schema':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../scenario-schema
     devDependencies:
       typescript:

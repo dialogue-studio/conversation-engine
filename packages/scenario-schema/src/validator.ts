@@ -4,7 +4,7 @@ import type {
   ScenarioObjective,
   Transition,
   TransitionKind,
-} from './index.ts';
+} from './index.js';
 
 export interface ScenarioValidationIssue {
   readonly code: string;
