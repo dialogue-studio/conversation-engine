@@ -1,7 +1,4 @@
-import type {
-  Scenario,
-  ScenarioNode,
-} from '@conversation-engine/scenario-schema';
+import type { Scenario, ScenarioNode } from '@dialogue-studio/scenario-schema';
 
 import { ScenarioNodeNotFoundError } from './engine.js';
 
@@ -16,10 +13,7 @@ export {
 } from './engine.js';
 export type { Clock, ConversationEngineOptions } from './engine.js';
 
-export type {
-  Scenario,
-  ScenarioNode,
-} from '@conversation-engine/scenario-schema';
+export type { Scenario, ScenarioNode } from '@dialogue-studio/scenario-schema';
 
 /** A platform-independent reference to the person taking part in a conversation. */
 export interface ParticipantRef {

@@ -1,5 +1,5 @@
 {
-  "name": "@conversation-engine/vk-worker",
+  "name": "@dialogue-studio/vk-worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,8 +9,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@conversation-engine/core-engine": "workspace:^",
-    "@conversation-engine/scenario-schema": "workspace:^",
+    "@dialogue-studio/core-engine": "workspace:^",
+    "@dialogue-studio/scenario-schema": "workspace:^",
     "hono": "4.12.31"
   },
   "devDependencies": {
