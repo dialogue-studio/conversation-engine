@@ -1,4 +1,4 @@
-import type { Scenario } from '@conversation-engine/scenario-schema';
+import type { Scenario } from '@dialogue-studio/scenario-schema';
 import { describe, expect, it } from 'vitest';
 
 import {

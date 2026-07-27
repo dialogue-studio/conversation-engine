@@ -1,5 +1,5 @@
 {
-  "name": "@conversation-engine/core-engine",
+  "name": "@dialogue-studio/core-engine",
   "version": "0.1.0",
   "private": false,
   "type": "module",
@@ -14,13 +14,16 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "pack:check": "npm pack --dry-run",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@conversation-engine/scenario-schema": "workspace:^"
+    "@dialogue-studio/scenario-schema": "workspace:^"
   },
   "devDependencies": {
     "typescript": "6.0.3"

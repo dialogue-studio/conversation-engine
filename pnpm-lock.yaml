@@ -50,10 +50,10 @@ importers:
 
   apps/vk-worker:
     dependencies:
-      '@conversation-engine/core-engine':
+      '@dialogue-studio/core-engine':
         specifier: workspace:^
         version: link:../../packages/core-engine
-      '@conversation-engine/scenario-schema':
+      '@dialogue-studio/scenario-schema':
         specifier: workspace:^
         version: link:../../packages/scenario-schema
       hono:
@@ -72,7 +72,7 @@ importers:
 
   packages/core-engine:
     dependencies:
-      '@conversation-engine/scenario-schema':
+      '@dialogue-studio/scenario-schema':
         specifier: workspace:^
         version: link:../scenario-schema
     devDependencies:

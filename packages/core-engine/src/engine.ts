@@ -2,7 +2,7 @@ import type {
   Scenario,
   ScenarioNode,
   Transition,
-} from '@conversation-engine/scenario-schema';
+} from '@dialogue-studio/scenario-schema';
 
 import type {
   EngineAction,

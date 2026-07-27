@@ -81,13 +81,13 @@ know them to render a button and send its payload.
 
 IDs remain plain strings because scenario content is serialized JSON and must be
 supplied by an editor, an importer, or a storage adapter. Before publication,
-call `validateScenario` from `@conversation-engine/scenario-schema` on that
+call `validateScenario` from `@dialogue-studio/scenario-schema` on that
 untrusted data. It checks the structural contract and graph rules: duplicate
 IDs, missing targets, missing objectives, unreachable nodes, invalid terminal
 nodes, and inconsistent hint or finish transitions.
 
 The package also exports the structural JSON Schema at
-`@conversation-engine/scenario-schema/scenario.schema.json`. The browser editor
+`@dialogue-studio/scenario-schema/scenario.schema.json`. The browser editor
 and a future Google Sheets importer can use it for immediate field-level
 feedback; `validateScenario` remains the final graph-level publication check.
 

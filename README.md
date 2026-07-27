@@ -32,7 +32,7 @@ pnpm check
 Run the Worker locally:
 
 ```bash
-pnpm --filter @conversation-engine/vk-worker dev
+pnpm --filter @dialogue-studio/vk-worker dev
 ```
 
 ## Status
