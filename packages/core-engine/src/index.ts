@@ -1,5 +1,6 @@
 import type { Scenario } from '@dialogue-studio/scenario-schema';
 
+// ESM specifiers name emitted files; TypeScript resolves this to src/*.ts.
 import { getInitialNode } from './scenario-resolution.js';
 
 export {
