@@ -1,6 +1,6 @@
-import type { Scenario, ScenarioNode } from '@dialogue-studio/scenario-schema';
+import type { Scenario } from '@dialogue-studio/scenario-schema';
 
-import { ScenarioNodeNotFoundError } from './engine.js';
+import { getInitialNode } from './scenario-resolution.js';
 
 export {
   ActionUnavailableError,
@@ -8,10 +8,24 @@ export {
   InvalidFinishTransitionError,
   ProgressNotFoundError,
   ProgressScenarioMismatchError,
-  ScenarioNodeNotFoundError,
-  ScenarioNotFoundError,
 } from './engine.js';
 export type { Clock, ConversationEngineOptions } from './engine.js';
+export {
+  ScenarioNodeNotFoundError,
+  ScenarioNotFoundError,
+} from './scenario-resolution.js';
+export {
+  DuplicateStatelessActionError,
+  StatelessActionNotFoundError,
+  StatelessConversationEngine,
+} from './stateless-engine.js';
+export type {
+  StatelessConversationEngineOptions,
+  StatelessEngineInput,
+  StatelessEngineOutput,
+  StatelessSelectActionInput,
+  StatelessStartScenarioInput,
+} from './stateless-engine.js';
 
 export type { Scenario, ScenarioNode } from '@dialogue-studio/scenario-schema';
 
@@ -110,12 +124,4 @@ export interface ProgressRepository {
  * invalid programmatic scenario fail at its boundary instead of returning an
  * unexpected `undefined` to an engine caller.
  */
-export function getInitialNode(scenario: Scenario): ScenarioNode {
-  const node = scenario.nodes[scenario.initialNodeId];
-
-  if (!node) {
-    throw new ScenarioNodeNotFoundError(scenario.id, scenario.initialNodeId);
-  }
-
-  return node;
-}
+export { getInitialNode };

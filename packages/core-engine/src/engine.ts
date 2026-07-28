@@ -15,6 +15,7 @@ import type {
   ScenarioReference,
   ScenarioRepository,
 } from './index.js';
+import { getNode, getScenario } from './scenario-resolution.js';
 
 export interface Clock {
   now(): string;
@@ -24,15 +25,6 @@ export interface ConversationEngineOptions {
   readonly clock: Clock;
   readonly progressRepository: ProgressRepository;
   readonly scenarioRepository: ScenarioRepository;
-}
-
-export class ScenarioNotFoundError extends Error {
-  constructor(reference: ScenarioReference) {
-    super(
-      `Scenario "${reference.scenarioId}" version ${String(reference.version)} was not found.`,
-    );
-    this.name = 'ScenarioNotFoundError';
-  }
 }
 
 export class ProgressNotFoundError extends Error {
@@ -69,13 +61,6 @@ export class ProgressScenarioMismatchError extends Error {
   }
 }
 
-export class ScenarioNodeNotFoundError extends Error {
-  constructor(scenarioId: string, nodeId: string) {
-    super(`Scenario "${scenarioId}" is missing node "${nodeId}".`);
-    this.name = 'ScenarioNodeNotFoundError';
-  }
-}
-
 export class ConversationEngine {
   readonly #clock: Clock;
   readonly #progressRepository: ProgressRepository;
@@ -88,7 +73,10 @@ export class ConversationEngine {
   }
 
   async handle(input: EngineInput): Promise<EngineOutput> {
-    const scenario = await this.#getScenario(input.scenario);
+    const scenario = await getScenario(
+      this.#scenarioRepository,
+      input.scenario,
+    );
 
     switch (input.kind) {
       case 'start_scenario':
@@ -98,16 +86,6 @@ export class ConversationEngine {
       case 'select_action':
         return this.#selectAction(scenario, input);
     }
-  }
-
-  async #getScenario(reference: ScenarioReference): Promise<Scenario> {
-    const scenario = await this.#scenarioRepository.getById(reference);
-
-    if (!scenario) {
-      throw new ScenarioNotFoundError(reference);
-    }
-
-    return scenario;
   }
 
   async #restart(
@@ -152,7 +130,7 @@ export class ConversationEngine {
       );
     }
 
-    const currentNode = this.#getNode(scenario, currentProgress.currentNodeId);
+    const currentNode = getNode(scenario, currentProgress.currentNodeId);
     const transition = currentNode.transitions.find(
       ({ actionId }) => actionId === input.actionId,
     );
@@ -164,7 +142,7 @@ export class ConversationEngine {
       throw new ActionUnavailableError(input.actionId, currentNode.id);
     }
 
-    const nextNode = this.#getNode(scenario, transition.targetNodeId);
+    const nextNode = getNode(scenario, transition.targetNodeId);
 
     if (transition.kind === 'finish' && nextNode.kind !== 'completion') {
       throw new InvalidFinishTransitionError(transition.actionId, nextNode.id);
@@ -221,7 +199,7 @@ export class ConversationEngine {
     participant: ParticipantRef,
     reference: ScenarioReference,
   ): ScenarioProgress {
-    const initialNode = this.#getNode(scenario, scenario.initialNodeId);
+    const initialNode = getNode(scenario, scenario.initialNodeId);
     const now = this.#clock.now();
     const completedObjectiveIds = unique(initialNode.completesObjectiveIds);
     const status = this.#getProgressStatus(
@@ -242,16 +220,6 @@ export class ConversationEngine {
       usedHintActionIds: [],
       visitedNodeIds: [initialNode.id],
     };
-  }
-
-  #getNode(scenario: Scenario, nodeId: string): ScenarioNode {
-    const node = scenario.nodes[nodeId];
-
-    if (!node) {
-      throw new ScenarioNodeNotFoundError(scenario.id, nodeId);
-    }
-
-    return node;
   }
 
   #getProgressStatus(
@@ -286,7 +254,7 @@ export class ConversationEngine {
   }
 
   #toOutput(scenario: Scenario, progress: ScenarioProgress): EngineOutput {
-    const node = this.#getNode(scenario, progress.currentNodeId);
+    const node = getNode(scenario, progress.currentNodeId);
     const messages: readonly EngineMessage[] = [
       {
         ...(node.speaker ? { speaker: node.speaker } : {}),

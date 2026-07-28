@@ -1,9 +1,8 @@
 # Core contracts
 
-`core-engine` owns the platform-independent contract for a single conversation
-transition. It knows how to work with scenario content and participant progress;
-it never imports a chat platform SDK, HTTP framework, Cloudflare binding, or
-database client.
+`core-engine` owns platform-independent contracts for a single conversation
+transition. It never imports a chat platform SDK, HTTP framework, Cloudflare
+binding, or database client.
 
 ## Scenario content
 
@@ -51,9 +50,25 @@ platform messages and buttons
 ```
 
 `ScenarioRepository` provides an immutable published scenario version.
-`ProgressRepository` persists one participant’s progress for that version.
-The first Cloudflare implementation may use KV for published content and D1 for
-progress, but neither storage choice is part of the core contract.
+
+`StatelessConversationEngine` is the default MVP runtime for button-led bots.
+It requires only a `ScenarioRepository`: start/restart returns the initial node,
+and `select_action` resolves a scenario-wide unique action ID to its target node.
+It stores no participant identifier, progress, history, or analytics. A client
+renders only the buttons returned for the node it just displayed; deliberately
+forged or stale actions are outside this MVP's enforcement model.
+
+Published scenarios must pass `validateScenario`, which enforces global action
+ID uniqueness. The stateless engine repeats the check while resolving an action
+so a programmatically supplied invalid scenario fails clearly instead of routing
+to an arbitrary matching transition. It also rejects an invalid `finish`
+transition whose target is not a completion node.
+
+`ConversationEngine` remains the optional, stateful training runtime.
+`ProgressRepository` persists one participant’s progress for that version and
+allows it to enforce objective-gated transitions, resumable attempts, scores,
+and later learning analytics. Neither storage choice is part of the core
+contract.
 
 `EngineAction` intentionally exposes only a stable action ID and visible label.
 `hint`, `navigation`, and other authoring semantics belong to the scenario
@@ -62,8 +77,8 @@ know them to render a button and send its payload.
 
 ## Runtime behavior
 
-`ConversationEngine` is deterministic and performs one transition per
-`EngineInput`.
+Both engines are deterministic and perform one transition per input. The
+following rules apply specifically to the stateful `ConversationEngine`.
 
 - `start_scenario` resumes an `in_progress` attempt; a completed or incomplete
   attempt starts again from the initial node.
