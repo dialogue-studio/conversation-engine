@@ -29,6 +29,7 @@ const scenario = {
   initialNodeId: 'intro',
   nodes: {
     intro: {
+      buttonLayout: { columns: 2 },
       completesObjectiveIds: [],
       id: 'intro',
       kind: 'message',
@@ -37,6 +38,7 @@ const scenario = {
       transitions: [
         {
           actionId: 'ask-about-bank',
+          hideWhenTargetVisited: true,
           kind: 'choice',
           label: 'Tell me about the bank',
           targetNodeId: 'bank',
@@ -67,6 +69,12 @@ const scenario = {
           kind: 'choice',
           label: 'Who are the clients?',
           targetNodeId: 'clients',
+        },
+        {
+          actionId: 'return-to-intro',
+          kind: 'navigation',
+          label: 'Ask another question',
+          targetNodeId: 'intro',
         },
         {
           actionId: 'ask-about-data-after-bank',
@@ -235,6 +243,7 @@ describe('ConversationEngine', () => {
       'ask-about-clients',
       'finish-early',
     ]);
+    expect(output.buttonLayout).toEqual({ columns: 2 });
     expect(output.progress).toMatchObject({
       currentNodeId: 'intro',
       status: 'in_progress',
@@ -251,6 +260,7 @@ describe('ConversationEngine', () => {
     expect(afterBank.progress.completedObjectiveIds).toEqual(['bank-overview']);
     expect(afterBank.actions.map(({ id }) => id)).toEqual([
       'ask-about-clients-after-bank',
+      'return-to-intro',
     ]);
 
     await expect(
@@ -264,6 +274,23 @@ describe('ConversationEngine', () => {
     expect(afterClients.actions.map(({ id }) => id)).toEqual([
       'ask-about-data-after-clients',
     ]);
+  });
+
+  it('hides an action whose target was already visited when the author opts in', async () => {
+    const engine = createEngine();
+
+    await engine.handle(start);
+    await engine.handle(select('ask-about-bank'));
+    const backAtIntro = await engine.handle(select('return-to-intro'));
+
+    expect(backAtIntro.actions.map(({ id }) => id)).toEqual([
+      'ask-about-clients',
+      'finish-early',
+    ]);
+
+    await expect(engine.handle(select('ask-about-bank'))).rejects.toThrow(
+      ActionUnavailableError,
+    );
   });
 
   it('records hint usage and completes the scenario after all required objectives', async () => {

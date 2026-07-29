@@ -137,7 +137,7 @@ export class ConversationEngine {
 
     if (
       !transition ||
-      !this.#isTransitionAvailable(transition, currentProgress)
+      !this.#isTransitionVisible(transition, currentProgress)
     ) {
       throw new ActionUnavailableError(input.actionId, currentNode.id);
     }
@@ -265,12 +265,28 @@ export class ConversationEngine {
       progress.status === 'in_progress'
         ? node.transitions
             .filter((transition) =>
-              this.#isTransitionAvailable(transition, progress),
+              this.#isTransitionVisible(transition, progress),
             )
             .map(({ actionId, label }) => ({ id: actionId, label }))
         : [];
 
-    return { actions, messages, progress };
+    return {
+      actions,
+      ...(node.buttonLayout ? { buttonLayout: node.buttonLayout } : {}),
+      messages,
+      progress,
+    };
+  }
+
+  #isTransitionVisible(
+    transition: Transition,
+    progress: ScenarioProgress,
+  ): boolean {
+    return (
+      this.#isTransitionAvailable(transition, progress) &&
+      (!transition.hideWhenTargetVisited ||
+        !progress.visitedNodeIds.includes(transition.targetNodeId))
+    );
   }
 }
 
