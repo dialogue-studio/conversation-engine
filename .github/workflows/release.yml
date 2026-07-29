@@ -1,18 +1,27 @@
-name: Publish internal packages
+name: Release packages
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
+  pull-requests: write
+
+concurrency:
+  group: release-packages
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -21,10 +30,12 @@ jobs:
           registry-url: https://npm.pkg.github.com
           scope: '@dialogue-studio'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build:packages
-      - run: pnpm --filter @dialogue-studio/scenario-schema publish --no-git-checks
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
+          commit: 'chore: version packages'
+          title: 'chore: release packages'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm --filter @dialogue-studio/core-engine publish --no-git-checks
-        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

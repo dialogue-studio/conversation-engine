@@ -16,6 +16,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
     "prepare": "husky",
+    "release": "changeset publish",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json && pnpm --filter './packages/**' -r typecheck",
