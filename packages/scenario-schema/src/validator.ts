@@ -649,7 +649,7 @@ function readOptionalBoolean(
   issues: ScenarioValidationIssue[],
 ): boolean | null {
   if (value[key] === undefined) {
-    return false;
+    return null;
   }
 
   return readBoolean(value, key, path, issues);

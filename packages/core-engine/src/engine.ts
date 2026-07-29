@@ -137,7 +137,7 @@ export class ConversationEngine {
 
     if (
       !transition ||
-      !this.#isTransitionAvailable(transition, currentProgress)
+      !this.#isTransitionVisible(transition, currentProgress)
     ) {
       throw new ActionUnavailableError(input.actionId, currentNode.id);
     }

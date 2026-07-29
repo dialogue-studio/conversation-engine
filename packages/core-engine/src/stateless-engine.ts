@@ -34,7 +34,8 @@ export type StatelessEngineInput =
  *
  * Buttons are the user-facing navigation mechanism. This engine does not
  * retain progress or enforce objective-based availability: platforms render
- * only the actions attached to the node they just displayed.
+ * only the actions attached to the node they just displayed. It therefore
+ * ignores `hideWhenTargetVisited`, which requires persisted visit history.
  */
 export interface StatelessEngineOutput {
   readonly actions: readonly EngineAction[];

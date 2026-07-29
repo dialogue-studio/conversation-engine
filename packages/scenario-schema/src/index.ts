@@ -30,7 +30,10 @@ export interface TransitionAvailability {
 
 /** Controls whether a previously answered route remains visible to a participant. */
 export interface TransitionVisibility {
-  /** Hide this action once its target node has been visited in the current session. */
+  /**
+   * Remove this action from the current session once its target node has been
+   * visited. Stateful runtimes also reject a later direct selection of it.
+   */
   readonly hideWhenTargetVisited?: boolean;
 }
 

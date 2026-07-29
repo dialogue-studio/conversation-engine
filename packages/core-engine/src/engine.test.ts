@@ -287,6 +287,10 @@ describe('ConversationEngine', () => {
       'ask-about-clients',
       'finish-early',
     ]);
+
+    await expect(engine.handle(select('ask-about-bank'))).rejects.toThrow(
+      ActionUnavailableError,
+    );
   });
 
   it('records hint usage and completes the scenario after all required objectives', async () => {
