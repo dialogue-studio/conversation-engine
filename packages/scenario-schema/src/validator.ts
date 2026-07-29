@@ -1,4 +1,5 @@
 import type {
+  ButtonLayout,
   Scenario,
   ScenarioNode,
   ScenarioObjective,
@@ -208,6 +209,7 @@ function parseNode(
   validateKnownKeys(
     value,
     [
+      'buttonLayout',
       'completesObjectiveIds',
       'id',
       'kind',
@@ -220,6 +222,12 @@ function parseNode(
     issues,
   );
   const id = readNonEmptyString(value, 'id', path, issues);
+  const buttonLayout = parseOptionalButtonLayout(
+    value,
+    'buttonLayout',
+    path,
+    issues,
+  );
   const title = readNonEmptyString(value, 'title', path, issues);
   const message = readNonEmptyString(value, 'message', path, issues);
   const kind = readNodeKind(value, 'kind', path, issues);
@@ -238,6 +246,7 @@ function parseNode(
 
   if (
     !id ||
+    (value.buttonLayout !== undefined && !buttonLayout) ||
     !title ||
     !message ||
     !kind ||
@@ -248,6 +257,7 @@ function parseNode(
   }
 
   return {
+    ...(buttonLayout ? { buttonLayout } : {}),
     ...(speaker !== null ? { speaker } : {}),
     completesObjectiveIds,
     id,
@@ -287,6 +297,7 @@ function parseTransitions(
       valueAtIndex,
       [
         'actionId',
+        'hideWhenTargetVisited',
         'kind',
         'label',
         'requiresCompletedObjectiveIds',
@@ -298,6 +309,12 @@ function parseTransitions(
     const actionId = readNonEmptyString(
       valueAtIndex,
       'actionId',
+      transitionPath,
+      issues,
+    );
+    const hideWhenTargetVisited = readOptionalBoolean(
+      valueAtIndex,
+      'hideWhenTargetVisited',
       transitionPath,
       issues,
     );
@@ -326,11 +343,19 @@ function parseTransitions(
       issues,
     );
 
-    if (!actionId || !kind || !label || !targetNodeId) {
+    if (
+      !actionId ||
+      !kind ||
+      !label ||
+      !targetNodeId ||
+      (valueAtIndex.hideWhenTargetVisited !== undefined &&
+        hideWhenTargetVisited === null)
+    ) {
       continue;
     }
 
     transitions.push({
+      ...(hideWhenTargetVisited === true ? { hideWhenTargetVisited } : {}),
       ...(requiresCompletedObjectiveIds
         ? { requiresCompletedObjectiveIds }
         : {}),
@@ -342,6 +367,41 @@ function parseTransitions(
   }
 
   return transitions.length === value.length ? transitions : null;
+}
+
+function parseOptionalButtonLayout(
+  value: Record<string, unknown>,
+  key: string,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): ButtonLayout | null {
+  const property = value[key];
+
+  if (property === undefined) {
+    return null;
+  }
+
+  if (!isRecord(property)) {
+    addIssue(
+      issues,
+      [...path, key],
+      'invalid_type',
+      `"${key}" must be an object.`,
+    );
+    return null;
+  }
+
+  validateKnownKeys(property, ['columns'], [...path, key], issues);
+  const columns = readIntegerInRange(
+    property,
+    'columns',
+    1,
+    5,
+    [...path, key],
+    issues,
+  );
+
+  return columns === null ? null : { columns };
 }
 
 function validateGraph(
@@ -582,6 +642,19 @@ function readBoolean(
   return null;
 }
 
+function readOptionalBoolean(
+  value: Record<string, unknown>,
+  key: string,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): boolean | null {
+  if (value[key] === undefined) {
+    return false;
+  }
+
+  return readBoolean(value, key, path, issues);
+}
+
 function readLiteralOne(
   value: Record<string, unknown>,
   key: string,
@@ -722,6 +795,34 @@ function readPositiveInteger(
     [...path, key],
     'invalid_value',
     `"${key}" must be a positive integer.`,
+  );
+  return null;
+}
+
+function readIntegerInRange(
+  value: Record<string, unknown>,
+  key: string,
+  minimum: number,
+  maximum: number,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): number | null {
+  const property = value[key];
+
+  if (
+    typeof property === 'number' &&
+    Number.isSafeInteger(property) &&
+    property >= minimum &&
+    property <= maximum
+  ) {
+    return property;
+  }
+
+  addIssue(
+    issues,
+    [...path, key],
+    'invalid_value',
+    `"${key}" must be an integer from ${String(minimum)} to ${String(maximum)}.`,
   );
   return null;
 }

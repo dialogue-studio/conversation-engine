@@ -22,6 +22,7 @@ const scenario = {
   initialNodeId: 'intro',
   nodes: {
     intro: {
+      buttonLayout: { columns: 2 },
       completesObjectiveIds: [],
       id: 'intro',
       kind: 'message',
@@ -73,6 +74,7 @@ describe('StatelessConversationEngine', () => {
       engine.handle({ kind: 'start_scenario', scenario: reference }),
     ).resolves.toEqual({
       actions: [{ id: 'open-order', label: 'My order' }],
+      buttonLayout: { columns: 2 },
       messages: [{ text: 'How can I help?' }],
       nodeId: 'intro',
       scenario: reference,

@@ -28,7 +28,11 @@ export type {
   StatelessStartScenarioInput,
 } from './stateless-engine.js';
 
-export type { Scenario, ScenarioNode } from '@dialogue-studio/scenario-schema';
+export type {
+  ButtonLayout,
+  Scenario,
+  ScenarioNode,
+} from '@dialogue-studio/scenario-schema';
 
 /** A platform-independent reference to the person taking part in a conversation. */
 export interface ParticipantRef {
@@ -100,6 +104,7 @@ export interface EngineAction {
  */
 export interface EngineOutput {
   readonly actions: readonly EngineAction[];
+  readonly buttonLayout?: import('@dialogue-studio/scenario-schema').ButtonLayout;
   readonly messages: readonly EngineMessage[];
   readonly progress: ScenarioProgress;
 }

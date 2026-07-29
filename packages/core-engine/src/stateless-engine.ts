@@ -38,6 +38,7 @@ export type StatelessEngineInput =
  */
 export interface StatelessEngineOutput {
   readonly actions: readonly EngineAction[];
+  readonly buttonLayout?: ScenarioNode['buttonLayout'];
   readonly messages: readonly EngineMessage[];
   readonly nodeId: string;
   readonly scenario: ScenarioReference;
@@ -148,6 +149,7 @@ export class StatelessConversationEngine {
         id: actionId,
         label,
       })),
+      ...(node.buttonLayout ? { buttonLayout: node.buttonLayout } : {}),
       messages: [
         {
           ...(node.speaker ? { speaker: node.speaker } : {}),

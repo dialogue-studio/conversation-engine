@@ -15,6 +15,7 @@ const validScenario = {
       transitions: [],
     },
     intro: {
+      buttonLayout: { columns: 2 },
       completesObjectiveIds: [],
       id: 'intro',
       kind: 'message',
@@ -23,6 +24,7 @@ const validScenario = {
       transitions: [
         {
           actionId: 'ask-about-bank',
+          hideWhenTargetVisited: true,
           kind: 'choice',
           label: 'Tell me about the bank',
           targetNodeId: 'bank',
@@ -87,6 +89,22 @@ describe('validateScenario', () => {
 
     expect(result.success).toBe(false);
     expect(result.issues.map(({ code }) => code)).toContain('invalid_type');
+  });
+
+  it('rejects a button layout outside the supported column range', () => {
+    const result = validateScenario({
+      ...validScenario,
+      nodes: {
+        ...validScenario.nodes,
+        intro: {
+          ...validScenario.nodes.intro,
+          buttonLayout: { columns: 6 },
+        },
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.issues.map(({ code }) => code)).toContain('invalid_value');
   });
 
   it('rejects an invalid finish transition', () => {

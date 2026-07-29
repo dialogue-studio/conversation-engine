@@ -13,6 +13,14 @@ export type ScenarioNodeKind = 'completion' | 'message';
 export type TransitionKind = 'choice' | 'finish' | 'hint' | 'navigation';
 
 /**
+ * Platform-neutral layout hint for a node's available actions.
+ * Platforms may use fewer columns when their own limits require it.
+ */
+export interface ButtonLayout {
+  readonly columns: number;
+}
+
+/**
  * Conditions that control whether a transition is offered to a participant.
  * All listed objectives must have been completed for the transition to unlock.
  */
@@ -20,7 +28,14 @@ export interface TransitionAvailability {
   readonly requiresCompletedObjectiveIds?: readonly string[];
 }
 
-export interface Transition extends TransitionAvailability {
+/** Controls whether a previously answered route remains visible to a participant. */
+export interface TransitionVisibility {
+  /** Hide this action once its target node has been visited in the current session. */
+  readonly hideWhenTargetVisited?: boolean;
+}
+
+export interface Transition
+  extends TransitionAvailability, TransitionVisibility {
   /**
    * Stable, scenario-wide unique action identifier. It is safe to persist in
    * participant progress, including for hint usage.
@@ -40,6 +55,7 @@ export interface Transition extends TransitionAvailability {
 }
 
 export interface ScenarioNode {
+  readonly buttonLayout?: ButtonLayout;
   readonly completesObjectiveIds: readonly string[];
   readonly id: string;
   readonly kind: ScenarioNodeKind;
