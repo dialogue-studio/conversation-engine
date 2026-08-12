@@ -21,6 +21,68 @@ export interface ButtonLayout {
 }
 
 /**
+ * The authoring format for a node's primary text. Adapters compile this source
+ * format to the dialect supported by their platform (for example Telegram
+ * MarkdownV2), rather than passing raw authored markdown through unchanged.
+ */
+export type MessageFormat = 'markdown' | 'plain';
+
+/** A stable reference to an asset managed by Dialogue Studio. */
+export interface ManagedAssetSource {
+  readonly assetId: string;
+  readonly kind: 'asset';
+}
+
+/** A publicly retrievable file URL, useful before an asset is imported. */
+export interface ExternalUrlSource {
+  readonly kind: 'external_url';
+  readonly url: string;
+}
+
+export type AttachmentSource = ExternalUrlSource | ManagedAssetSource;
+
+export type MediaAttachmentKind =
+  'animation' | 'audio' | 'document' | 'photo' | 'video' | 'voice';
+
+/** A media asset, including GIFs represented as `animation`. */
+export interface MediaAttachment {
+  readonly caption?: string;
+  readonly kind: MediaAttachmentKind;
+  readonly source: AttachmentSource;
+}
+
+/** A standalone link that a platform may render as a button or preview. */
+export interface LinkAttachment {
+  readonly kind: 'link';
+  readonly label?: string;
+  readonly url: string;
+}
+
+/** Native contact data, not a string that needs to be parsed from markdown. */
+export interface ContactAttachment {
+  readonly firstName: string;
+  readonly kind: 'contact';
+  readonly lastName?: string;
+  readonly phoneNumber: string;
+}
+
+/** A point that platforms can render as their native map/location message. */
+export interface LocationAttachment {
+  readonly address?: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly kind: 'location';
+  readonly title?: string;
+}
+
+/**
+ * Extra outgoing content for a node. The node's `message` remains the primary
+ * text, so existing plain-text scenarios remain valid without migration.
+ */
+export type ScenarioAttachment =
+  ContactAttachment | LinkAttachment | LocationAttachment | MediaAttachment;
+
+/**
  * Conditions that control whether a transition is offered to a participant.
  * All listed objectives must have been completed for the transition to unlock.
  */
@@ -58,11 +120,13 @@ export interface Transition
 }
 
 export interface ScenarioNode {
+  readonly attachments?: readonly ScenarioAttachment[];
   readonly buttonLayout?: ButtonLayout;
   readonly completesObjectiveIds: readonly string[];
   readonly id: string;
   readonly kind: ScenarioNodeKind;
   readonly message: string;
+  readonly messageFormat?: MessageFormat;
   readonly speaker?: string;
   readonly title: string;
   readonly transitions: readonly Transition[];

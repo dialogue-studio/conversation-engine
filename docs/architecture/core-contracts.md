@@ -32,6 +32,29 @@ A `Scenario` is an immutable, versioned graph.
 The author-facing UI uses titles and labels. Stable IDs link nodes, objectives,
 and transitions so renaming a step cannot break the graph.
 
+## Rich content
+
+Every node retains its required `message` as its primary authored text. Existing
+plain-text scenarios therefore continue to work unchanged. A node may also set
+`messageFormat: "markdown"` and attach extra outgoing content:
+
+- `animation` (including GIF), `audio`, `document`, `photo`, `video`, and
+  `voice` media;
+- a standalone `link`;
+- a native `contact`;
+- a native `location`.
+
+Media may use a temporary public HTTPS URL or a stable Dialogue Studio
+`assetId`. The engine only transports that data; an adapter resolves managed
+assets through its application boundary and renders each attachment with the
+native platform API.
+
+Markdown is an authoring format, not an incoming-user-input type and not a
+Telegram-specific payload. A Telegram adapter compiles it to the supported
+Telegram dialect, while another platform may render it differently. Native
+contacts and locations intentionally remain typed attachments because a URL or
+Markdown string cannot replace the platform's native sharing and map features.
+
 ## Runtime boundary
 
 Every chat adapter maps its event to `EngineInput` and maps `EngineOutput` back

@@ -257,8 +257,10 @@ export class ConversationEngine {
     const node = getNode(scenario, progress.currentNodeId);
     const messages: readonly EngineMessage[] = [
       {
+        ...(node.attachments ? { attachments: node.attachments } : {}),
         ...(node.speaker ? { speaker: node.speaker } : {}),
         text: node.message,
+        ...(node.messageFormat ? { textFormat: node.messageFormat } : {}),
       },
     ];
     const actions: readonly EngineAction[] =
