@@ -62,6 +62,75 @@ describe('validateScenario', () => {
     expect(result).toEqual({ data: validScenario, issues: [], success: true });
   });
 
+  it('accepts rich attachments and markdown authored text', () => {
+    const scenarioWithRichContent = {
+      ...validScenario,
+      nodes: {
+        ...validScenario.nodes,
+        intro: {
+          ...validScenario.nodes.intro,
+          attachments: [
+            {
+              kind: 'animation',
+              source: {
+                kind: 'external_url',
+                url: 'https://assets.example.com/welcome.gif',
+              },
+            },
+            {
+              kind: 'link',
+              label: 'Open the course',
+              url: 'https://example.com/course',
+            },
+            {
+              firstName: 'Support',
+              kind: 'contact',
+              phoneNumber: '+12025550123',
+            },
+            {
+              kind: 'location',
+              latitude: 40.758,
+              longitude: -73.9855,
+              title: 'Training centre',
+            },
+            {
+              caption: 'Read before the next step.',
+              kind: 'document',
+              source: { assetId: 'asset_training_brief', kind: 'asset' },
+            },
+          ],
+          message: 'Read the [course introduction](https://example.com/course).',
+          messageFormat: 'markdown',
+        },
+      },
+    } as const satisfies Scenario;
+
+    expect(validateScenario(scenarioWithRichContent)).toEqual({
+      data: scenarioWithRichContent,
+      issues: [],
+      success: true,
+    });
+  });
+
+  it('rejects unsafe links and invalid location coordinates', () => {
+    const result = validateScenario({
+      ...validScenario,
+      nodes: {
+        ...validScenario.nodes,
+        intro: {
+          ...validScenario.nodes.intro,
+          attachments: [
+            { kind: 'link', url: 'javascript:alert(1)' },
+            { kind: 'location', latitude: 91, longitude: 0 },
+          ],
+        },
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.issues.map(({ code }) => code)).toContain('invalid_value');
+  });
+
   it('rejects unexpected fields and invalid scalar values', () => {
     const result = validateScenario({
       ...validScenario,

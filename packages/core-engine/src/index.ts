@@ -1,4 +1,8 @@
-import type { Scenario } from '@dialogue-studio/scenario-schema';
+import type {
+  MessageFormat,
+  Scenario,
+  ScenarioAttachment,
+} from '@dialogue-studio/scenario-schema';
 
 // ESM specifiers name emitted files; TypeScript resolves this to src/*.ts.
 import { getInitialNode } from './scenario-resolution.js';
@@ -30,7 +34,9 @@ export type {
 
 export type {
   ButtonLayout,
+  MessageFormat,
   Scenario,
+  ScenarioAttachment,
   ScenarioNode,
 } from '@dialogue-studio/scenario-schema';
 
@@ -88,8 +94,10 @@ export type EngineInput =
   RestartScenarioInput | SelectActionInput | StartScenarioInput;
 
 export interface EngineMessage {
+  readonly attachments?: readonly ScenarioAttachment[];
   readonly speaker?: string;
   readonly text: string;
+  readonly textFormat?: MessageFormat;
 }
 
 /** A platform adapter turns an available action into a platform-specific button. */

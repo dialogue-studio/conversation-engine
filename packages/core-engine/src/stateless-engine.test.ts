@@ -22,11 +22,21 @@ const scenario = {
   initialNodeId: 'intro',
   nodes: {
     intro: {
+      attachments: [
+        {
+          kind: 'photo',
+          source: {
+            kind: 'external_url',
+            url: 'https://assets.example.com/welcome.jpg',
+          },
+        },
+      ],
       buttonLayout: { columns: 2 },
       completesObjectiveIds: [],
       id: 'intro',
       kind: 'message',
       message: 'How can I help?',
+      messageFormat: 'plain',
       title: 'Introduction',
       transitions: [
         {
@@ -75,7 +85,21 @@ describe('StatelessConversationEngine', () => {
     ).resolves.toEqual({
       actions: [{ id: 'open-order', label: 'My order' }],
       buttonLayout: { columns: 2 },
-      messages: [{ text: 'How can I help?' }],
+      messages: [
+        {
+          attachments: [
+            {
+              kind: 'photo',
+              source: {
+                kind: 'external_url',
+                url: 'https://assets.example.com/welcome.jpg',
+              },
+            },
+          ],
+          text: 'How can I help?',
+          textFormat: 'plain',
+        },
+      ],
       nodeId: 'intro',
       scenario: reference,
     });

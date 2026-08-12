@@ -153,8 +153,10 @@ export class StatelessConversationEngine {
       ...(node.buttonLayout ? { buttonLayout: node.buttonLayout } : {}),
       messages: [
         {
+          ...(node.attachments ? { attachments: node.attachments } : {}),
           ...(node.speaker ? { speaker: node.speaker } : {}),
           text: node.message,
+          ...(node.messageFormat ? { textFormat: node.messageFormat } : {}),
         },
       ],
       nodeId: node.id,

@@ -29,11 +29,19 @@ const scenario = {
   initialNodeId: 'intro',
   nodes: {
     intro: {
+      attachments: [
+        {
+          kind: 'link',
+          label: 'Course material',
+          url: 'https://example.com/course',
+        },
+      ],
       buttonLayout: { columns: 2 },
       completesObjectiveIds: [],
       id: 'intro',
       kind: 'message',
-      message: 'What would you like to learn?',
+      message: 'What would you like to learn? [Course material](https://example.com/course)',
+      messageFormat: 'markdown',
       title: 'Introduction',
       transitions: [
         {
@@ -236,7 +244,17 @@ describe('ConversationEngine', () => {
     const output = await createEngine().handle(start);
 
     expect(output.messages).toEqual([
-      { text: 'What would you like to learn?' },
+      {
+        attachments: [
+          {
+            kind: 'link',
+            label: 'Course material',
+            url: 'https://example.com/course',
+          },
+        ],
+        text: 'What would you like to learn? [Course material](https://example.com/course)',
+        textFormat: 'markdown',
+      },
     ]);
     expect(output.actions.map(({ id }) => id)).toEqual([
       'ask-about-bank',

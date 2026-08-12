@@ -1,11 +1,22 @@
 import type {
+  AttachmentSource,
   ButtonLayout,
+  ContactAttachment,
+  LinkAttachment,
+  LocationAttachment,
+  MediaAttachment,
+  MediaAttachmentKind,
+  MessageFormat,
   Scenario,
+  ScenarioAttachment,
   ScenarioNode,
   ScenarioObjective,
   Transition,
   TransitionKind,
 } from './index.js';
+
+const safeExternalUrlProtocols = new Set(['https:', 'http:']);
+const safeLinkProtocols = new Set(['https:', 'http:', 'mailto:', 'tel:']);
 
 export interface ScenarioValidationIssue {
   readonly code: string;
@@ -209,11 +220,13 @@ function parseNode(
   validateKnownKeys(
     value,
     [
+      'attachments',
       'buttonLayout',
       'completesObjectiveIds',
       'id',
       'kind',
       'message',
+      'messageFormat',
       'speaker',
       'title',
       'transitions',
@@ -228,8 +241,15 @@ function parseNode(
     path,
     issues,
   );
+  const attachments = parseOptionalAttachments(value, 'attachments', path, issues);
   const title = readNonEmptyString(value, 'title', path, issues);
   const message = readNonEmptyString(value, 'message', path, issues);
+  const messageFormat = readOptionalMessageFormat(
+    value,
+    'messageFormat',
+    path,
+    issues,
+  );
   const kind = readNodeKind(value, 'kind', path, issues);
   const speaker = readOptionalNonEmptyString(value, 'speaker', path, issues);
   const completesObjectiveIds = readStringArray(
@@ -246,6 +266,7 @@ function parseNode(
 
   if (
     !id ||
+    (value.attachments !== undefined && !attachments) ||
     (value.buttonLayout !== undefined && !buttonLayout) ||
     !title ||
     !message ||
@@ -258,6 +279,8 @@ function parseNode(
 
   return {
     ...(buttonLayout ? { buttonLayout } : {}),
+    ...(attachments ? { attachments } : {}),
+    ...(messageFormat ? { messageFormat } : {}),
     ...(speaker !== null ? { speaker } : {}),
     completesObjectiveIds,
     id,
@@ -367,6 +390,212 @@ function parseTransitions(
   }
 
   return transitions.length === value.length ? transitions : null;
+}
+
+function parseOptionalAttachments(
+  value: Record<string, unknown>,
+  key: string,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): readonly ScenarioAttachment[] | null {
+  const property = value[key];
+
+  if (property === undefined) {
+    return null;
+  }
+
+  if (!Array.isArray(property) || property.length === 0) {
+    addIssue(
+      issues,
+      [...path, key],
+      'invalid_type',
+      `"${key}" must be a non-empty array of attachments.`,
+    );
+    return null;
+  }
+
+  const attachments: ScenarioAttachment[] = [];
+
+  for (const [index, attachmentValue] of property.entries()) {
+    const attachment = parseAttachment(
+      attachmentValue,
+      [...path, key, index],
+      issues,
+    );
+
+    if (attachment) {
+      attachments.push(attachment);
+    }
+  }
+
+  return attachments.length === property.length ? attachments : null;
+}
+
+function parseAttachment(
+  value: unknown,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): ScenarioAttachment | null {
+  if (!isRecord(value)) {
+    addIssue(issues, path, 'invalid_type', 'Each attachment must be an object.');
+    return null;
+  }
+
+  const kind = value.kind;
+
+  if (kind === 'contact') {
+    return parseContactAttachment(value, path, issues);
+  }
+
+  if (kind === 'link') {
+    return parseLinkAttachment(value, path, issues);
+  }
+
+  if (kind === 'location') {
+    return parseLocationAttachment(value, path, issues);
+  }
+
+  if (isMediaAttachmentKind(kind)) {
+    return parseMediaAttachment(value, path, issues);
+  }
+
+  addIssue(
+    issues,
+    [...path, 'kind'],
+    'invalid_value',
+    'Attachment kind is not supported.',
+  );
+  return null;
+}
+
+function parseContactAttachment(
+  value: Record<string, unknown>,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): ContactAttachment | null {
+  validateKnownKeys(
+    value,
+    ['firstName', 'kind', 'lastName', 'phoneNumber'],
+    path,
+    issues,
+  );
+  const firstName = readNonEmptyString(value, 'firstName', path, issues);
+  const lastName = readOptionalNonEmptyString(value, 'lastName', path, issues);
+  const phoneNumber = readNonEmptyString(value, 'phoneNumber', path, issues);
+
+  if (!firstName || !phoneNumber) {
+    return null;
+  }
+
+  return {
+    firstName,
+    kind: 'contact',
+    ...(lastName ? { lastName } : {}),
+    phoneNumber,
+  };
+}
+
+function parseLinkAttachment(
+  value: Record<string, unknown>,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): LinkAttachment | null {
+  validateKnownKeys(value, ['kind', 'label', 'url'], path, issues);
+  const label = readOptionalNonEmptyString(value, 'label', path, issues);
+  const url = readSafeUrl(value, 'url', path, issues, safeLinkProtocols);
+
+  if (!url) {
+    return null;
+  }
+
+  return {
+    kind: 'link',
+    ...(label ? { label } : {}),
+    url,
+  };
+}
+
+function parseLocationAttachment(
+  value: Record<string, unknown>,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): LocationAttachment | null {
+  validateKnownKeys(
+    value,
+    ['address', 'kind', 'latitude', 'longitude', 'title'],
+    path,
+    issues,
+  );
+  const address = readOptionalNonEmptyString(value, 'address', path, issues);
+  const latitude = readNumberInRange(value, 'latitude', -90, 90, path, issues);
+  const longitude = readNumberInRange(value, 'longitude', -180, 180, path, issues);
+  const title = readOptionalNonEmptyString(value, 'title', path, issues);
+
+  if (latitude === null || longitude === null) {
+    return null;
+  }
+
+  return {
+    ...(address ? { address } : {}),
+    kind: 'location',
+    latitude,
+    longitude,
+    ...(title ? { title } : {}),
+  };
+}
+
+function parseMediaAttachment(
+  value: Record<string, unknown>,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): MediaAttachment | null {
+  validateKnownKeys(value, ['caption', 'kind', 'source'], path, issues);
+  const caption = readOptionalNonEmptyString(value, 'caption', path, issues);
+  const kind = value.kind;
+  const source = parseAttachmentSource(value.source, [...path, 'source'], issues);
+
+  if (!isMediaAttachmentKind(kind) || !source) {
+    return null;
+  }
+
+  return {
+    ...(caption ? { caption } : {}),
+    kind,
+    source,
+  };
+}
+
+function parseAttachmentSource(
+  value: unknown,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): AttachmentSource | null {
+  if (!isRecord(value)) {
+    addIssue(issues, path, 'invalid_type', 'Attachment source must be an object.');
+    return null;
+  }
+
+  if (value.kind === 'asset') {
+    validateKnownKeys(value, ['assetId', 'kind'], path, issues);
+    const assetId = readNonEmptyString(value, 'assetId', path, issues);
+
+    return assetId ? { assetId, kind: 'asset' } : null;
+  }
+
+  if (value.kind === 'external_url') {
+    validateKnownKeys(value, ['kind', 'url'], path, issues);
+    const url = readSafeUrl(value, 'url', path, issues, safeExternalUrlProtocols);
+
+    return url ? { kind: 'external_url', url } : null;
+  }
+
+  addIssue(
+    issues,
+    [...path, 'kind'],
+    'invalid_value',
+    'Attachment source kind is not supported.',
+  );
+  return null;
 }
 
 function parseOptionalButtonLayout(
@@ -827,6 +1056,97 @@ function readIntegerInRange(
   return null;
 }
 
+function readNumberInRange(
+  value: Record<string, unknown>,
+  key: string,
+  minimum: number,
+  maximum: number,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): number | null {
+  const property = value[key];
+
+  if (
+    typeof property === 'number' &&
+    Number.isFinite(property) &&
+    property >= minimum &&
+    property <= maximum
+  ) {
+    return property;
+  }
+
+  addIssue(
+    issues,
+    [...path, key],
+    'invalid_value',
+    `"${key}" must be a number from ${String(minimum)} to ${String(maximum)}.`,
+  );
+  return null;
+}
+
+function readOptionalMessageFormat(
+  value: Record<string, unknown>,
+  key: string,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+): MessageFormat | null {
+  const property = value[key];
+
+  if (property === undefined) {
+    return null;
+  }
+
+  if (property === 'markdown' || property === 'plain') {
+    return property;
+  }
+
+  addIssue(
+    issues,
+    [...path, key],
+    'invalid_value',
+    `"${key}" must be "markdown" or "plain".`,
+  );
+  return null;
+}
+
+function readSafeUrl(
+  value: Record<string, unknown>,
+  key: string,
+  path: readonly (number | string)[],
+  issues: ScenarioValidationIssue[],
+  allowedProtocols: ReadonlySet<string>,
+): string | null {
+  const property = value[key];
+
+  if (typeof property !== 'string' || property.trim().length === 0) {
+    addIssue(
+      issues,
+      [...path, key],
+      'invalid_value',
+      `"${key}" must be a supported absolute URL.`,
+    );
+    return null;
+  }
+
+  try {
+    const url = new URL(property);
+
+    if (allowedProtocols.has(url.protocol)) {
+      return property;
+    }
+  } catch {
+    // The uniform validation error below intentionally does not expose parser details.
+  }
+
+  addIssue(
+    issues,
+    [...path, key],
+    'invalid_value',
+    `"${key}" must be a supported absolute URL.`,
+  );
+  return null;
+}
+
 function readStringArray(
   value: Record<string, unknown>,
   key: string,
@@ -888,6 +1208,17 @@ function readTransitionKind(
     `"${key}" must be a supported transition kind.`,
   );
   return null;
+}
+
+function isMediaAttachmentKind(value: unknown): value is MediaAttachmentKind {
+  return (
+    value === 'animation' ||
+    value === 'audio' ||
+    value === 'document' ||
+    value === 'photo' ||
+    value === 'video' ||
+    value === 'voice'
+  );
 }
 
 function validateKnownKeys(
