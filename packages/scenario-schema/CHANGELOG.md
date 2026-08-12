@@ -1,5 +1,11 @@
 # @dialogue-studio/scenario-schema
 
+## 0.3.1
+
+### Patch Changes
+
+- 6fb1f0d: Publish compiled JavaScript and declaration files with both packages.
+
 ## 0.3.0
 
 ### Minor Changes
