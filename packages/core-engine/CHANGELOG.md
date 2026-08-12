@@ -1,5 +1,16 @@
 # @dialogue-studio/core-engine
 
+## 0.4.0
+
+### Minor Changes
+
+- 5324ca3: Add platform-neutral rich node content: Markdown-authored primary text and typed media, link, contact, and location attachments. Existing plain-text scenario files remain valid.
+
+### Patch Changes
+
+- Updated dependencies [5324ca3]
+  - @dialogue-studio/scenario-schema@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes
