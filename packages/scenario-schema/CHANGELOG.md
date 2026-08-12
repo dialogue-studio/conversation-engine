@@ -1,5 +1,11 @@
 # @dialogue-studio/scenario-schema
 
+## 0.3.0
+
+### Minor Changes
+
+- 5324ca3: Add platform-neutral rich node content: Markdown-authored primary text and typed media, link, contact, and location attachments. Existing plain-text scenario files remain valid.
+
 ## 0.2.0
 
 ### Minor Changes
