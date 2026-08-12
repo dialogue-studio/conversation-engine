@@ -1,5 +1,13 @@
 # @dialogue-studio/core-engine
 
+## 0.4.1
+
+### Patch Changes
+
+- 6fb1f0d: Publish compiled JavaScript and declaration files with both packages.
+- Updated dependencies [6fb1f0d]
+  - @dialogue-studio/scenario-schema@0.3.1
+
 ## 0.4.0
 
 ### Minor Changes
