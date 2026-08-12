@@ -177,6 +177,27 @@ describe('validateScenario', () => {
     expect(result.issues.map(({ code }) => code)).toContain('invalid_value');
   });
 
+  it('rejects malformed optional transition properties', () => {
+    const result = validateScenario({
+      ...validScenario,
+      nodes: {
+        ...validScenario.nodes,
+        intro: {
+          ...validScenario.nodes.intro,
+          transitions: [
+            {
+              ...validScenario.nodes.intro.transitions[0],
+              requiresCompletedObjectiveIds: 'bank-overview',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.issues.map(({ code }) => code)).toContain('invalid_type');
+  });
+
   it('rejects an invalid finish transition', () => {
     const result = validateScenario({
       ...validScenario,

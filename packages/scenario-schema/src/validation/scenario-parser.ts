@@ -3,6 +3,7 @@ import type { Scenario, ScenarioNode, ScenarioObjective } from '../index.js';
 import type { ValidationIssues, ValidationPath } from './issues.js';
 import { reportInvalidType, reportInvalidValue } from './issues.js';
 import { parseNode } from './node-parser.js';
+import { createOptionalProperty } from './optional-properties.js';
 import { readLiteralOne, readPositiveInteger, readBoolean } from './readers.js';
 import { isRecord, validateKnownKeys } from './records.js';
 import { readNonEmptyString, readOptionalString } from './text-readers.js';
@@ -53,7 +54,7 @@ export function parseScenario(
   }
 
   return {
-    ...(description !== null ? { description } : {}),
+    ...createOptionalProperty('description', description),
     id,
     initialNodeId,
     nodes,

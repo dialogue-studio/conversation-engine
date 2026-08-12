@@ -3,6 +3,7 @@ import type { ScenarioNode } from '../index.js';
 import { parseOptionalAttachments } from './attachments.js';
 import type { ValidationIssues, ValidationPath } from './issues.js';
 import { reportInvalidType } from './issues.js';
+import { createOptionalProperty } from './optional-properties.js';
 import { readNodeKind, readStringArray } from './readers.js';
 import { isRecord, validateKnownKeys } from './records.js';
 import {
@@ -45,12 +46,7 @@ export function parseNode(
     path,
     issues,
   );
-  const buttonLayout = parseOptionalButtonLayout(
-    value,
-    'buttonLayout',
-    path,
-    issues,
-  );
+  const buttonLayout = parseOptionalButtonLayout(value, path, issues);
   const completesObjectiveIds = readStringArray(
     value,
     'completesObjectiveIds',
@@ -89,14 +85,14 @@ export function parseNode(
   }
 
   return {
-    ...(attachments ? { attachments } : {}),
-    ...(buttonLayout ? { buttonLayout } : {}),
+    ...createOptionalProperty('attachments', attachments),
+    ...createOptionalProperty('buttonLayout', buttonLayout),
     completesObjectiveIds,
     id,
     kind,
     message,
-    ...(messageFormat ? { messageFormat } : {}),
-    ...(speaker ? { speaker } : {}),
+    ...createOptionalProperty('messageFormat', messageFormat),
+    ...createOptionalProperty('speaker', speaker),
     title,
     transitions,
   };

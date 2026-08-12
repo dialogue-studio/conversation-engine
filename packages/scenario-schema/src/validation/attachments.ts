@@ -10,6 +10,7 @@ import type {
 
 import type { ValidationIssues, ValidationPath } from './issues.js';
 import { reportInvalidType, reportInvalidValue } from './issues.js';
+import { createOptionalProperty } from './optional-properties.js';
 import { readNumberInRange } from './readers.js';
 import { isRecord, validateKnownKeys } from './records.js';
 import {
@@ -114,7 +115,7 @@ function parseContactAttachment(
   return {
     firstName,
     kind: 'contact',
-    ...(lastName ? { lastName } : {}),
+    ...createOptionalProperty('lastName', lastName),
     phoneNumber,
   };
 }
@@ -134,7 +135,7 @@ function parseLinkAttachment(
 
   return {
     kind: 'link',
-    ...(label ? { label } : {}),
+    ...createOptionalProperty('label', label),
     url,
   };
 }
@@ -167,11 +168,11 @@ function parseLocationAttachment(
   }
 
   return {
-    ...(address ? { address } : {}),
+    ...createOptionalProperty('address', address),
     kind: 'location',
     latitude,
     longitude,
-    ...(title ? { title } : {}),
+    ...createOptionalProperty('title', title),
   };
 }
 
@@ -193,7 +194,7 @@ function parseMediaAttachment(
   }
 
   return {
-    ...(caption ? { caption } : {}),
+    ...createOptionalProperty('caption', caption),
     kind: value.kind,
     source,
   };
