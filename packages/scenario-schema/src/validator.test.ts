@@ -99,7 +99,8 @@ describe('validateScenario', () => {
               source: { assetId: 'asset_training_brief', kind: 'asset' },
             },
           ],
-          message: 'Read the [course introduction](https://example.com/course).',
+          message:
+            'Read the [course introduction](https://example.com/course).',
           messageFormat: 'markdown',
         },
       },

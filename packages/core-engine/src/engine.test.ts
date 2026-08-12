@@ -40,7 +40,8 @@ const scenario = {
       completesObjectiveIds: [],
       id: 'intro',
       kind: 'message',
-      message: 'What would you like to learn? [Course material](https://example.com/course)',
+      message:
+        'What would you like to learn? [Course material](https://example.com/course)',
       messageFormat: 'markdown',
       title: 'Introduction',
       transitions: [

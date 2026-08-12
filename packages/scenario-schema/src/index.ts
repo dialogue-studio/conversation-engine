@@ -42,12 +42,7 @@ export interface ExternalUrlSource {
 export type AttachmentSource = ExternalUrlSource | ManagedAssetSource;
 
 export type MediaAttachmentKind =
-  | 'animation'
-  | 'audio'
-  | 'document'
-  | 'photo'
-  | 'video'
-  | 'voice';
+  'animation' | 'audio' | 'document' | 'photo' | 'video' | 'voice';
 
 /** A media asset, including GIFs represented as `animation`. */
 export interface MediaAttachment {
@@ -85,10 +80,7 @@ export interface LocationAttachment {
  * text, so existing plain-text scenarios remain valid without migration.
  */
 export type ScenarioAttachment =
-  | ContactAttachment
-  | LinkAttachment
-  | LocationAttachment
-  | MediaAttachment;
+  ContactAttachment | LinkAttachment | LocationAttachment | MediaAttachment;
 
 /**
  * Conditions that control whether a transition is offered to a participant.
